@@ -404,13 +404,9 @@ func (s *simpleSQL) SelectDb(ctx context.Context, model IModel, criteria string,
 
 		structData := reflect.New(rstType.Elem()).Elem()
 
-		inPrms := make([]reflect.Value, 0)
+		inPrms := generateStorage(structData)
 
-		for i := 0; i < structData.NumField(); i++ {
-			inPrms = append(inPrms, structData.Field(i).Addr())
-		}
-
-		outPrms := reflect.ValueOf(rows.Scan).Call(inPrms)
+		outPrms := reflect.ValueOf(rows.Scan).Call(inPrms) //store to output
 		errOut := outPrms[0].Interface()
 		if errOut != nil {
 			err, ok := errOut.(error)

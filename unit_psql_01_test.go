@@ -694,6 +694,12 @@ func Test_Postgresql_DeleteAllRecords_09(t *testing.T) {
 		t.Fatalf("%s\n", err.Error())
 	}
 
+	data := make([]Student, 0)
+	model.SetNewData(Student{})
+	if err = sqlOp.SelectDb(context.Background(), model, "", &data); err != nil {
+		t.Errorf("%s\n", err.Error())
+	}
+
 	t.Logf("delete all records from table")
 
 	model.SetNewData(nil)
@@ -703,7 +709,7 @@ func Test_Postgresql_DeleteAllRecords_09(t *testing.T) {
 
 	t.Logf("read from table")
 
-	data := make([]Student, 0)
+	data = make([]Student, 0)
 	model.SetNewData(Student{})
 	if err = sqlOp.SelectDb(context.Background(), model, "", &data); err != nil {
 		t.Fatalf("%s\n", err.Error())

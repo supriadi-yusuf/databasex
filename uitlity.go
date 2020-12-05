@@ -46,12 +46,19 @@ func getFieldsFromType(dataType reflect.Type) (fields []string, err error) {
 		field := dataType.Field(i)
 
 		if field.Type.Kind() == reflect.Struct {
+
+			//fmt.Println("field is struct")
+
 			names, err := getFieldsFromType(field.Type)
 			if err != nil {
+				fmt.Println("field is struct : ", err.Error())
 				return nil, err
 			}
 
+			//fmt.Println("field is struct : ", names)
 			slices = append(slices, names...)
+			//fmt.Println("field is struct : ", slices)
+
 			continue
 		}
 
@@ -181,4 +188,22 @@ func inspectResultOfSelect(result interface{}) (reflect.Type, error) {
 	}
 
 	return rstType, nil
+}
+
+func generateStorage(structData reflect.Value) []reflect.Value {
+	storages := make([]reflect.Value, 0)
+
+	for i := 0; i < structData.NumField(); i++ {
+
+		field := structData.Field(i)
+		if field.Type().Kind() == reflect.Struct {
+			newStorages := generateStorage(field)
+			storages = append(storages, newStorages...)
+			continue
+		}
+
+		storages = append(storages, field.Addr())
+	}
+
+	return storages
 }
