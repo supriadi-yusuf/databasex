@@ -623,3 +623,94 @@ func Test_Postgresql_DeleteAllRecords_08(t *testing.T) {
 	}
 
 }
+
+func Test_Postgresql_DeleteAllRecords_09(t *testing.T) {
+
+	log.Println(t.Name())
+
+	// Student is type
+	type AnakStudent struct {
+		ID   string
+		Name string
+	}
+
+	type Student struct {
+		AnakStudent
+		Age   int
+		Grade int
+	}
+
+	t.Logf("testing : delete all records from tabel tb_student in db_belajar_golang database using postgresq")
+
+	t.Logf("create connection to database server")
+
+	postgres, err := NewPostgre(psqlUsernameTest, psqlPasswordTest, psqlHostTest, psqlPortTest, psqlDbTest,
+		psqlOtherTest, psqlMaxConnectionsTest, psqlMaxIdleTest)
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	db, err := postgres.GetDbConnection()
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	defer db.Close()
+
+	sqlOp := NewSimpleSQL(postgres)
+
+	t.Logf("delete all data first")
+
+	model := NewSimpleModel("tb_student", nil)
+	if _, err = sqlOp.DeleteDb(context.Background(), model, ""); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	t.Logf("add several data")
+
+	student := Student{AnakStudent{"C001", "junjun"}, 6, 1}
+	model.SetNewData(student)
+
+	if err = sqlOp.InsertDb(context.Background(), model); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	student = Student{}
+	student.ID = "C002"
+	student.Name = "maman"
+	student.Age = 8
+	student.Grade = 2
+
+	model.SetNewData(student)
+
+	if err = sqlOp.InsertDb(context.Background(), model); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	student = Student{AnakStudent{"C003", "yuli"}, 10, 5}
+	model.SetNewData(student)
+
+	if err = sqlOp.InsertDb(context.Background(), model); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	t.Logf("delete all records from table")
+
+	model.SetNewData(nil)
+	if _, err = sqlOp.DeleteDb(context.Background(), model, ""); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	t.Logf("read from table")
+
+	data := make([]Student, 0)
+	model.SetNewData(Student{})
+	if err = sqlOp.SelectDb(context.Background(), model, "", &data); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	if len(data) != 0 {
+		t.Errorf("table still has data")
+	}
+
+}

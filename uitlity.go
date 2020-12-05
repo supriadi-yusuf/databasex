@@ -44,6 +44,17 @@ func getFieldsFromType(dataType reflect.Type) (fields []string, err error) {
 
 	for i := 0; i < dataType.NumField(); i++ {
 		field := dataType.Field(i)
+
+		if field.Type.Kind() == reflect.Struct {
+			names, err := getFieldsFromType(field.Type)
+			if err != nil {
+				return nil, err
+			}
+
+			slices = append(slices, names...)
+			continue
+		}
+
 		name := field.Name
 		tagName := field.Tag.Get(fieldTbl)
 		if tagName != "" {
@@ -61,7 +72,19 @@ func getValuesFromValue(dataValue reflect.Value) (values []interface{}, err erro
 	slices := make([]interface{}, 0)
 
 	for i := 0; i < dataValue.NumField(); i++ {
-		slices = append(slices, dataValue.Field(i).Interface())
+
+		field := dataValue.Field(i)
+		if field.Type().Kind() == reflect.Struct {
+			newSlices, err := getValuesFromValue(field)
+			if err != nil {
+				return nil, err
+			}
+
+			slices = append(slices, newSlices...)
+			continue
+		}
+
+		slices = append(slices, field.Interface())
 	}
 
 	return slices, nil
