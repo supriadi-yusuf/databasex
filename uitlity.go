@@ -45,27 +45,24 @@ func getFieldsFromType(dataType reflect.Type) (fields []string, err error) {
 	for i := 0; i < dataType.NumField(); i++ {
 		field := dataType.Field(i)
 
-		if field.Type.Kind() == reflect.Struct {
-
-			//fmt.Println("field is struct")
-
-			names, err := getFieldsFromType(field.Type)
-			if err != nil {
-				fmt.Println("field is struct : ", err.Error())
-				return nil, err
-			}
-
-			//fmt.Println("field is struct : ", names)
-			slices = append(slices, names...)
-			//fmt.Println("field is struct : ", slices)
-
-			continue
-		}
-
 		name := field.Name
 		tagName := field.Tag.Get(fieldTbl)
 		if tagName != "" {
 			name = tagName
+		}
+
+		if field.Type.Kind() == reflect.Struct {
+			if tagName == "" { // check if it has tag
+
+				names, err := getFieldsFromType(field.Type) //recursive
+				if err != nil {
+					return nil, err
+				}
+
+				slices = append(slices, names...)
+
+				continue
+			}
 		}
 
 		slices = append(slices, name)
@@ -78,17 +75,24 @@ func getValuesFromValue(dataValue reflect.Value) (values []interface{}, err erro
 
 	slices := make([]interface{}, 0)
 
+	dataType := dataValue.Type()
 	for i := 0; i < dataValue.NumField(); i++ {
 
 		field := dataValue.Field(i)
 		if field.Type().Kind() == reflect.Struct {
-			newSlices, err := getValuesFromValue(field)
-			if err != nil {
-				return nil, err
+			fieldType := dataType.Field(i)
+			tagName := fieldType.Tag.Get(fieldTbl)
+			if tagName == "" { // check if it has tag
+
+				newSlices, err := getValuesFromValue(field) //recursive
+				if err != nil {
+					return nil, err
+				}
+
+				slices = append(slices, newSlices...)
+				continue
 			}
 
-			slices = append(slices, newSlices...)
-			continue
 		}
 
 		slices = append(slices, field.Interface())
@@ -193,13 +197,19 @@ func inspectResultOfSelect(result interface{}) (reflect.Type, error) {
 func generateStorage(structData reflect.Value) []reflect.Value {
 	storages := make([]reflect.Value, 0)
 
+	structDataType := structData.Type()
 	for i := 0; i < structData.NumField(); i++ {
 
 		field := structData.Field(i)
 		if field.Type().Kind() == reflect.Struct {
-			newStorages := generateStorage(field)
-			storages = append(storages, newStorages...)
-			continue
+
+			fieldType := structDataType.Field(i)
+			tagName := fieldType.Tag.Get(fieldTbl)
+			if tagName == "" { // check if it has tag
+				newStorages := generateStorage(field) //recursive
+				storages = append(storages, newStorages...)
+				continue
+			}
 		}
 
 		storages = append(storages, field.Addr())

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -719,4 +720,175 @@ func Test_Postgresql_DeleteAllRecords_09(t *testing.T) {
 		t.Errorf("table still has data")
 	}
 
+}
+
+func Test_Postgresql_DeleteAllRecords_10(t *testing.T) {
+
+	log.Println(t.Name())
+
+	t.Logf("testing : delete all records from tabel tb_student in db_belajar_golang database using postgresq")
+
+	t.Logf("create connection to database server")
+
+	postgres, err := NewPostgre(psqlUsernameTest, psqlPasswordTest, psqlHostTest, psqlPortTest, psqlDbTest,
+		psqlOtherTest, psqlMaxConnectionsTest, psqlMaxIdleTest)
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	db, err := postgres.GetDbConnection()
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	defer db.Close()
+
+	sqlOp := NewSimpleSQL(postgres)
+
+	t.Logf("delete all data first")
+
+	model := NewSimpleModel("tb_user", nil)
+	if _, err = sqlOp.DeleteDb(context.Background(), model, ""); err != nil {
+		t.Errorf("%s\n", err.Error())
+	}
+
+	// TUser is type for user
+	type TUser struct {
+		Name     string `fieldtbl:"user_name"`
+		Password string `fieldtbl:"password"`
+		Email    string `fieldtbl:"email"`
+		Role     string `fieldtbl:"role"`
+	}
+
+	// TUserTable is data type containing user data
+	type TUserTable struct {
+		TUser
+		Status     string    `fieldtbl:"status"`
+		CreatedAt  time.Time `fieldtbl:"created_at"`
+		LastUpdate time.Time `fieldtbl:"last_update"`
+	}
+
+	var userData TUserTable
+	var userDataColl []TUserTable
+
+	model = NewSimpleModel("tb_user", userData)
+
+	err = sqlOp.SelectDb(context.Background(), model, "", &userDataColl)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if len(userDataColl) > 0 {
+		t.Errorf("table should not have data any more\n")
+	}
+
+	t.Logf("add several data")
+
+	username := "supriadi"
+	password := "pass123"
+	email := "supriadi@gmail.com"
+	role := "umum"
+	status := "pending"
+	createdAt := time.Now()
+	lastUpdate := time.Now()
+
+	userData = TUserTable{TUser{username, password, email, role}, status, createdAt, lastUpdate}
+	model.SetNewData(userData)
+
+	if err = sqlOp.InsertDb(context.Background(), model); err != nil {
+		t.Errorf("%s\n", err.Error())
+	}
+
+	if err = sqlOp.SelectDb(context.Background(), model, "", &userDataColl); err != nil {
+		t.Errorf("%s\n", err.Error())
+	}
+
+	if len(userDataColl) != 1 {
+		t.Errorf("table should have only one record\n")
+	}
+
+	if err = sqlOp.SelectDb(context.Background(), model, "user_name='"+username+"'", &userDataColl); err != nil {
+		t.Errorf("%s\n", err.Error())
+	}
+
+	if len(userDataColl) != 1 {
+		t.Errorf("table should have only one record for user supriadi\n")
+	}
+
+	if userDataColl[0].Name != username ||
+		userDataColl[0].Password != password ||
+		userDataColl[0].Email != email ||
+		userDataColl[0].Role != role ||
+		userDataColl[0].Status != status ||
+		userDataColl[0].CreatedAt.Unix() != createdAt.Unix() ||
+		userDataColl[0].LastUpdate.Unix() != lastUpdate.Unix() {
+		t.Errorf("data is different\n")
+	}
+	/*
+		t.Logf("update status into 'active' and role into 'admin' ")
+
+		username = "supriadi"
+		//password := "pass123"
+		//email := "supriadi@gmail.com"
+		role = "admin"
+		status = "active"
+		//createdAt := time.Now()
+		lastUpdate = time.Now()
+
+		type TUserUpdate struct {
+			Role       string    `fieldtbl:"role"`
+			Status     string    `fieldtbl:"status"`
+			LastUpdate time.Time `fieldtbl:"last_update"`
+		}
+
+		updatedUser := TUserUpdate{role, status, lastUpdate}
+
+		model.SetNewData(updatedUser)
+		if _, err = sqlOp.UpdateDb(context.Background(), model, "user_name='"+username+"'"); err != nil {
+			fmt.Println("update error : ", updatedUser)
+			t.Errorf("%s\n", err.Error())
+			return
+		}
+
+		t.Logf("Check update result\n")
+
+		model.SetNewData(TUserTable{})
+		if err = sqlOp.SelectDb(context.Background(), model, "user_name='"+username+"'", &userDataColl); err != nil {
+			t.Errorf("%s\n", err.Error())
+		}
+
+		if len(userDataColl) != 1 {
+			t.Errorf("table should have only one record for user supriadi\n")
+		}
+
+		if userDataColl[0].Name != username ||
+			userDataColl[0].Password != password ||
+			userDataColl[0].Email != email ||
+			userDataColl[0].Role != role ||
+			userDataColl[0].Status != status ||
+			userDataColl[0].CreatedAt.Unix() != createdAt.Unix() ||
+			userDataColl[0].LastUpdate.Unix() != lastUpdate.Unix() {
+			t.Errorf("data is different\n")
+		}
+	*/
+	/*
+
+
+		model.SetNewData(nil)
+		if _, err = sqlOp.DeleteDb(context.Background(), model, ""); err != nil {
+			t.Fatalf("%s\n", err.Error())
+		}
+
+		t.Logf("read from table")
+
+		data = make([]Student, 0)
+		model.SetNewData(Student{})
+		if err = sqlOp.SelectDb(context.Background(), model, "", &data); err != nil {
+			t.Fatalf("%s\n", err.Error())
+		}
+
+		if len(data) != 0 {
+			t.Errorf("table still has data")
+		}
+	*/
 }

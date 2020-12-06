@@ -275,6 +275,8 @@ func (s *simpleSQL) UpdateDb(ctx context.Context, model IModel, criteria string)
 		cmdStr = fmt.Sprintf("%s where %s", cmdStr, criteria)
 	}
 
+	//fmt.Println(cmdStr)
+
 	db, err := s.getDb().GetDbConnection()
 	if err != nil {
 		return 0, err
