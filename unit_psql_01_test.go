@@ -824,53 +824,53 @@ func Test_Postgresql_DeleteAllRecords_10(t *testing.T) {
 		userDataColl[0].LastUpdate.Unix() != lastUpdate.Unix() {
 		t.Errorf("data is different\n")
 	}
-	/*
-		t.Logf("update status into 'active' and role into 'admin' ")
 
-		username = "supriadi"
-		//password := "pass123"
-		//email := "supriadi@gmail.com"
-		role = "admin"
-		status = "active"
-		//createdAt := time.Now()
-		lastUpdate = time.Now()
+	t.Logf("update status into 'active' and role into 'admin' ")
 
-		type TUserUpdate struct {
-			Role       string    `fieldtbl:"role"`
-			Status     string    `fieldtbl:"status"`
-			LastUpdate time.Time `fieldtbl:"last_update"`
-		}
+	username = "supriadi"
+	//password := "pass123"
+	//email := "supriadi@gmail.com"
+	role = "admin"
+	status = "active"
+	//createdAt := time.Now()
+	lastUpdate = time.Now()
 
-		updatedUser := TUserUpdate{role, status, lastUpdate}
+	type TUserUpdate struct {
+		Role       string    `fieldtbl:"role"`
+		Status     string    `fieldtbl:"status"`
+		LastUpdate time.Time `fieldtbl:"last_update"`
+	}
 
-		model.SetNewData(updatedUser)
-		if _, err = sqlOp.UpdateDb(context.Background(), model, "user_name='"+username+"'"); err != nil {
-			fmt.Println("update error : ", updatedUser)
-			t.Errorf("%s\n", err.Error())
-			return
-		}
+	updatedUser := TUserUpdate{role, status, lastUpdate}
 
-		t.Logf("Check update result\n")
+	model.SetNewData(updatedUser)
+	if _, err = sqlOp.UpdateDb(context.Background(), model, "user_name='"+username+"'"); err != nil {
+		fmt.Println("update error : ", updatedUser)
+		t.Errorf("%s\n", err.Error())
+		return
+	}
 
-		model.SetNewData(TUserTable{})
-		if err = sqlOp.SelectDb(context.Background(), model, "user_name='"+username+"'", &userDataColl); err != nil {
-			t.Errorf("%s\n", err.Error())
-		}
+	t.Logf("Check update result\n")
 
-		if len(userDataColl) != 1 {
-			t.Errorf("table should have only one record for user supriadi\n")
-		}
+	model.SetNewData(TUserTable{})
+	if err = sqlOp.SelectDb(context.Background(), model, "user_name='"+username+"'", &userDataColl); err != nil {
+		t.Errorf("%s\n", err.Error())
+	}
 
-		if userDataColl[0].Name != username ||
-			userDataColl[0].Password != password ||
-			userDataColl[0].Email != email ||
-			userDataColl[0].Role != role ||
-			userDataColl[0].Status != status ||
-			userDataColl[0].CreatedAt.Unix() != createdAt.Unix() ||
-			userDataColl[0].LastUpdate.Unix() != lastUpdate.Unix() {
-			t.Errorf("data is different\n")
-		}
-	*/
+	if len(userDataColl) != 1 {
+		t.Errorf("table should have only one record for user supriadi\n")
+	}
+
+	if userDataColl[0].Name != username ||
+		userDataColl[0].Password != password ||
+		userDataColl[0].Email != email ||
+		userDataColl[0].Role != role ||
+		userDataColl[0].Status != status ||
+		userDataColl[0].CreatedAt.Unix() != createdAt.Unix() ||
+		userDataColl[0].LastUpdate.Unix() != lastUpdate.Unix() {
+		t.Errorf("data is different\n")
+	}
+
 	/*
 
 

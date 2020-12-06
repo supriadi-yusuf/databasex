@@ -23,6 +23,7 @@ import (
 //   Get dbms's connection.
 //
 type IDatabase interface {
+	GetValueMark(fieldSec int) (valueMark string, err error)
 	CreateValuesMark(fieldNum int) (valuesMark string, err error)
 	GetDbConnection() (dbConn *sql.DB, err error)
 }

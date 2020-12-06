@@ -10,13 +10,18 @@ type postgresDb struct {
 	realDb
 }
 
+func (workDb *postgresDb) GetValueMark(fieldSec int) (valueMark string, err error) {
+	return fmt.Sprintf("$%d", fieldSec+1), nil
+}
+
 // CreateQueryString is method implementing interface
 func (workDb *postgresDb) CreateValuesMark(fieldNum int) (string, error) {
 
 	var arrPrms []string
 
-	for i := 1; i <= fieldNum; i++ {
-		arrPrms = append(arrPrms, fmt.Sprintf("$%d", i))
+	for i := 0; i < fieldNum; i++ {
+		newValueMark, _ := workDb.GetValueMark(i)
+		arrPrms = append(arrPrms, newValueMark)
 		//arrPrms = append(arrPrms, "?")
 	}
 

@@ -111,7 +111,8 @@ func inspectContext(ctx context.Context) error {
 	return nil
 }
 
-func createInsertCommand( /*ctx context.Context,*/ model IModel, markFunc func(int) (string, error)) (cmd string, values []interface{}, err error) {
+func createInsertCommand( /*ctx context.Context,*/ model IModel, markFunc func(int) (string, error)) (cmd string,
+	values []interface{}, err error) {
 	/*if err = inspectContext(ctx); err != nil {
 		return
 	}*/
@@ -130,7 +131,8 @@ func createInsertCommand( /*ctx context.Context,*/ model IModel, markFunc func(i
 	return
 }
 
-func createUpdateCommand(model IModel) (cmd string, err error) {
+func createUpdateCommand(model IModel, markFunc func(int) (string, error)) (cmd string,
+	values []interface{}, err error) {
 
 	tblName, fields, values, err := extractFromModel(model)
 	if err != nil {
@@ -140,28 +142,24 @@ func createUpdateCommand(model IModel) (cmd string, err error) {
 	//fmt.Println(fields, values)
 
 	pairs := make([]string, 0)
-	var value interface{}
-	var ok bool
+	//var value interface{}
+	//var ok bool
 
-	for idx, field := range fields {
-		value = values[idx]
-		_, ok = value.(string)
-		if ok {
-			value = fmt.Sprintf("'%v'", value)
+	for i, field := range fields {
+
+		valueMark, err := markFunc(i)
+		if err != nil {
+			return "", nil, err
 		}
 
-		//fmt.Printf("%s=%v\n", field, value)
-		//fmt.Println(value)
-
-		pairs = append(pairs, fmt.Sprintf("%s=%v", field, value))
-
+		pairs = append(pairs, fmt.Sprintf("%s=%s", field, valueMark))
 	}
 
 	//fmt.Println(pairs)
 
 	cmd = fmt.Sprintf("update %s set %s", tblName, strings.Join(pairs, ","))
 
-	return cmd, nil
+	return cmd, values, nil
 }
 
 func createSelectCommand(model IModel) (cmd string, err error) {

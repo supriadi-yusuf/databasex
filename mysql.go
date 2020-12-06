@@ -10,14 +10,19 @@ type mysqlDb struct {
 	realDb
 }
 
+func (workDb *mysqlDb) GetValueMark(fieldSec int) (valueMark string, err error) {
+	return "?", nil
+}
+
 // CreateQueryString is method implementing interface
 func (workDb *mysqlDb) CreateValuesMark(fieldNum int) (string, error) {
 
 	var arrPrms []string
 
-	for i := 1; i <= fieldNum; i++ {
+	for i := 0; i < fieldNum; i++ {
 		//arrPrms = append(arrPrms, fmt.Sprintf("$%d", i))
-		arrPrms = append(arrPrms, "?")
+		newValueMark, _ := workDb.GetValueMark(i)
+		arrPrms = append(arrPrms, newValueMark)
 	}
 
 	return strings.Join(arrPrms, ","), nil

@@ -264,7 +264,7 @@ func (s *simpleSQL) UpdateDb(ctx context.Context, model IModel, criteria string)
 		return 0, err
 	}
 
-	cmdStr, err := createUpdateCommand(model)
+	cmdStr, values, err := createUpdateCommand(model, s.getDb().GetValueMark)
 	if err != nil {
 		return 0, err
 	}
@@ -282,7 +282,7 @@ func (s *simpleSQL) UpdateDb(ctx context.Context, model IModel, criteria string)
 		return 0, err
 	}
 
-	rst, err := db.ExecContext(ctx, cmdStr)
+	rst, err := db.ExecContext(ctx, cmdStr, values...)
 	if err != nil {
 		return 0, err
 	}
@@ -301,7 +301,7 @@ func (s *simpleSQL) UpdateConn(ctx context.Context, conn *sql.Conn, model IModel
 		return 0, err
 	}
 
-	cmdStr, err := createUpdateCommand(model)
+	cmdStr, values, err := createUpdateCommand(model, s.getDb().GetValueMark)
 	if err != nil {
 		return 0, err
 	}
@@ -317,7 +317,7 @@ func (s *simpleSQL) UpdateConn(ctx context.Context, conn *sql.Conn, model IModel
 		return 0, err
 	}*/
 
-	rst, err := conn.ExecContext(ctx, cmdStr)
+	rst, err := conn.ExecContext(ctx, cmdStr, values...)
 	if err != nil {
 		return 0, err
 	}
@@ -335,7 +335,7 @@ func (s *simpleSQL) UpdateTrans(ctx context.Context, tx *sql.Tx, model IModel, c
 		return 0, err
 	}
 
-	cmdStr, err := createUpdateCommand(model)
+	cmdStr, values, err := createUpdateCommand(model, s.getDb().GetValueMark)
 	if err != nil {
 		return 0, err
 	}
@@ -351,7 +351,7 @@ func (s *simpleSQL) UpdateTrans(ctx context.Context, tx *sql.Tx, model IModel, c
 		return 0, err
 	}*/
 
-	rst, err := tx.ExecContext(ctx, cmdStr)
+	rst, err := tx.ExecContext(ctx, cmdStr, values...)
 	if err != nil {
 		return 0, err
 	}
