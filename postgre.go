@@ -3,6 +3,7 @@ package databasex
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -47,6 +48,14 @@ func (workDb *postgresDb) createConnection(username, password, host, port, dbnam
 	workDb.db = db
 
 	return db, nil
+}
+
+func (workDb *postgresDb) BeforeScan(structData reflect.Value) []reflect.Value {
+	return generateStorage(structData)
+}
+
+func (workDb *postgresDb) AfterScan(structData reflect.Value, prms []reflect.Value) {
+
 }
 
 // NewPostgre is a function to connect with postgresql database.

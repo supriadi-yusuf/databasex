@@ -3,7 +3,9 @@ package databasex
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
 	"strings"
+	"time"
 )
 
 type mysqlDb struct {
@@ -48,6 +50,68 @@ func (workDb *mysqlDb) createConnection(username, password, host, port, dbname s
 	workDb.db = db
 
 	return db, nil
+}
+
+func (workDb *mysqlDb) BeforeScan(structData reflect.Value) []reflect.Value {
+
+	storages := make([]reflect.Value, 0)
+
+	structDataType := structData.Type()
+	for i := 0; i < structData.NumField(); i++ {
+
+		field := structData.Field(i)
+		if field.Type().Kind() == reflect.Struct {
+
+			fieldType := structDataType.Field(i)
+			tagName := fieldType.Tag.Get(fieldTbl)
+			if tagName == "" { // check if it has tag
+				newStorages := workDb.BeforeScan(field) //recursive
+				storages = append(storages, newStorages...)
+				continue
+			}
+		}
+
+		fieldAddres := field.Addr()
+		if field.Type().Name() == "Time" {
+			newField := reflect.New(reflect.TypeOf([]byte(""))).Elem()
+			fieldAddres = newField.Addr()
+			//fmt.Println(field.Type().Name())
+		}
+
+		storages = append(storages, fieldAddres)
+	}
+
+	return storages
+}
+
+func (workDb *mysqlDb) AfterScan(structData reflect.Value, prms []reflect.Value) {
+
+	structDataType := structData.Type()
+	for i := 0; i < structData.NumField(); i++ {
+
+		field := structData.Field(i)
+		if field.Type().Kind() == reflect.Struct {
+
+			fieldType := structDataType.Field(i)
+			tagName := fieldType.Tag.Get(fieldTbl)
+			if tagName == "" { // check if it has tag
+				workDb.AfterScan(field, prms) //recursive
+				continue
+			}
+		}
+
+		if field.Type().Name() == "Time" {
+
+			stime := fmt.Sprintf("%s", prms[i].Elem().Interface())
+			//fmt.Println(stime)
+
+			newTime, _ := time.Parse("2006-01-02 15:04:05", stime)
+			//fmt.Println(newTime)
+			//fmt.Println(field.CanSet())
+			field.Set(reflect.ValueOf(newTime))
+		}
+
+	}
 }
 
 // NewMysql is a function to connect with mysql database.

@@ -406,7 +406,7 @@ func (s *simpleSQL) SelectDb(ctx context.Context, model IModel, criteria string,
 
 		structData := reflect.New(rstType.Elem()).Elem()
 
-		inPrms := generateStorage(structData)
+		inPrms := s.getDb().BeforeScan(structData)
 
 		outPrms := reflect.ValueOf(rows.Scan).Call(inPrms) //store to output
 		errOut := outPrms[0].Interface()
@@ -418,6 +418,8 @@ func (s *simpleSQL) SelectDb(ctx context.Context, model IModel, criteria string,
 
 			return errors.New("unkown error after scanning")
 		}
+
+		s.getDb().AfterScan(structData, inPrms)
 
 		newRst = reflect.Append(newRst, structData)
 	}

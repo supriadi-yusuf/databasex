@@ -4,6 +4,7 @@ package databasex
 import (
 	"database/sql"
 	"errors"
+	"reflect"
 	//_ "github.com/lib/pq"
 )
 
@@ -26,6 +27,8 @@ type IDatabase interface {
 	GetValueMark(fieldSec int) (valueMark string, err error)
 	CreateValuesMark(fieldNum int) (valuesMark string, err error)
 	GetDbConnection() (dbConn *sql.DB, err error)
+	BeforeScan(structData reflect.Value) []reflect.Value
+	AfterScan(structData reflect.Value, prms []reflect.Value)
 }
 
 type realDb struct {
