@@ -52,7 +52,7 @@ func Test_Postgresql_CreateTable_01(t *testing.T) {
 		t.Fatalf("%s\n", err.Error())
 	}
 
-	cmdStr = "create table if not exists tb_student(id varchar(5),	name varchar(255),age int,grade int)"
+	cmdStr = "create table if not exists tb_student(id varchar(5), name varchar(255), age int, grade int, created_at timestamp with time zone)"
 	_, err = db.Exec(cmdStr)
 	if err != nil {
 		t.Fatalf("%s\n", err.Error())
@@ -891,4 +891,139 @@ func Test_Postgresql_DeleteAllRecords_10(t *testing.T) {
 			t.Errorf("table still has data")
 		}
 	*/
+}
+
+func Test_Postgresql_datetime_11(t *testing.T) {
+
+	log.Println(t.Name())
+
+	// Student is type
+	type Student struct {
+		ID        string    `fieldtbl:"id"`
+		Name      string    `fieldtbl:"name"`
+		Age       int       `fieldtbl:"age"`
+		Grade     int       `fieldtbl:"grade"`
+		CreatedAt time.Time `fieldtbl:"created_at"`
+	}
+
+	t.Logf("testing : add date time field into tabel tb_student in db_belajar_golang database using postgresq")
+
+	t.Logf("create connection to database server")
+
+	postgres, err := NewPostgre(psqlUsernameTest, psqlPasswordTest, psqlHostTest, psqlPortTest, psqlDbTest,
+		psqlOtherTest, psqlMaxConnectionsTest, psqlMaxIdleTest)
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	db, err := postgres.GetDbConnection()
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	defer db.Close()
+
+	sqlOp := NewSimpleSQL(postgres)
+
+	t.Logf("delete all data first")
+
+	model := NewSimpleModel("tb_student", nil)
+	if _, err = sqlOp.DeleteDb(context.Background(), model, ""); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	t.Logf("insert one record into table")
+
+	student := Student{"C001", "junjun", 6, 1, time.Now()}
+	model.SetNewData(student)
+
+	if err = sqlOp.InsertDb(context.Background(), model); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	t.Logf("read table")
+
+	data := make([]Student, 0)
+	model.SetNewData(Student{})
+	if err = sqlOp.SelectDb(context.Background(), model, fmt.Sprintf("ID='%s'", student.ID), &data); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	if len(data) < 1 {
+		t.Errorf("adding one data fail")
+	}
+
+	if data[0].ID != student.ID || data[0].Name != student.Name || data[0].Age != student.Age || data[0].Grade != student.Grade {
+		t.Errorf("data is different")
+	}
+
+}
+
+func Test_Postgresql_embed_12(t *testing.T) {
+
+	log.Println(t.Name())
+
+	type Kid struct {
+		ID   string `fieldtbl:"id"`
+		Name string `fieldtbl:"name"`
+		Age  int    `fieldtbl:"age"`
+	}
+
+	// Student is type
+	type Student struct {
+		Kid
+		Grade int `fieldtbl:"grade"`
+	}
+
+	t.Logf("testing : add date time field into tabel tb_student in db_belajar_golang database using postgresq")
+
+	t.Logf("create connection to database server")
+
+	postgres, err := NewPostgre(psqlUsernameTest, psqlPasswordTest, psqlHostTest, psqlPortTest, psqlDbTest,
+		psqlOtherTest, psqlMaxConnectionsTest, psqlMaxIdleTest)
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	db, err := postgres.GetDbConnection()
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	defer db.Close()
+
+	sqlOp := NewSimpleSQL(postgres)
+
+	t.Logf("delete all data first")
+
+	model := NewSimpleModel("tb_student", nil)
+	if _, err = sqlOp.DeleteDb(context.Background(), model, ""); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	t.Logf("insert one record into table")
+
+	student := Student{Kid{"C001", "junjun", 6}, 1}
+	model.SetNewData(student)
+
+	if err = sqlOp.InsertDb(context.Background(), model); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	t.Logf("read table")
+
+	data := make([]Student, 0)
+	model.SetNewData(Student{})
+	if err = sqlOp.SelectDb(context.Background(), model, fmt.Sprintf("ID='%s'", student.ID), &data); err != nil {
+		t.Fatalf("%s\n", err.Error())
+	}
+
+	if len(data) < 1 {
+		t.Errorf("adding one data fail")
+	}
+
+	if data[0].ID != student.ID || data[0].Name != student.Name || data[0].Age != student.Age || data[0].Grade != student.Grade {
+		t.Errorf("data is different")
+	}
+
 }
