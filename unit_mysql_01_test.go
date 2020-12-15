@@ -685,6 +685,11 @@ func Test_MySql_embed_10(t *testing.T) {
 
 }
 
+func isTimeDifferent(time1, time2 time.Time) bool {
+	return time1.Year() != time2.Year() && time1.Month() != time2.Month() && time1.Day() != time2.Day() &&
+		time1.Hour() != time2.Hour() && time1.Minute() != time2.Minute() && time1.Second() != time2.Second()
+}
+
 func Test_MySql_datetime_11(t *testing.T) {
 
 	log.Println(t.Name())
@@ -745,7 +750,13 @@ func Test_MySql_datetime_11(t *testing.T) {
 		t.Errorf("adding one data fail")
 	}
 
-	if data[0].ID != student.ID || data[0].Name != student.Name || data[0].Age != student.Age || data[0].Grade != student.Grade {
+	//fmt.Println(data[0].CreatedAt.Day())
+	//fmt.Println(student.CreatedAt.Day())
+	//fmt.Println(data[0].CreatedAt)
+	//fmt.Println(student.CreatedAt)
+
+	if data[0].ID != student.ID || data[0].Name != student.Name || data[0].Age != student.Age ||
+		data[0].Grade != student.Grade || isTimeDifferent(data[0].CreatedAt, student.CreatedAt) {
 		t.Errorf("data is different")
 	}
 

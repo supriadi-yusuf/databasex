@@ -953,7 +953,8 @@ func Test_Postgresql_datetime_11(t *testing.T) {
 		t.Errorf("adding one data fail")
 	}
 
-	if data[0].ID != student.ID || data[0].Name != student.Name || data[0].Age != student.Age || data[0].Grade != student.Grade {
+	if data[0].ID != student.ID || data[0].Name != student.Name || data[0].Age != student.Age ||
+		data[0].Grade != student.Grade || isTimeDifferent(data[0].CreatedAt, student.CreatedAt) {
 		t.Errorf("data is different")
 	}
 
