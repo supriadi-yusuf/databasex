@@ -73,7 +73,8 @@ func (workDb *mysqlDb) BeforeScan(structData reflect.Value) []reflect.Value {
 
 		fieldAddres := field.Addr()
 		if field.Type().Name() == "Time" {
-			newField := reflect.New(reflect.TypeOf([]byte(""))).Elem()
+			//newField := reflect.New(reflect.TypeOf([]byte(""))).Elem()
+			newField := reflect.New(reflect.TypeOf((*interface{})(nil)).Elem()).Elem()
 			fieldAddres = newField.Addr()
 			//fmt.Println(field.Type().Name())
 		}
