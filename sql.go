@@ -86,6 +86,9 @@ type ISqlOperation interface {
 
 	// retrieve data from table
 	SelectDb(ctx context.Context, model IModel, criteria string, result interface{}) error
+
+	// check if there is time value in struct type
+	//NoTimeFieldInStruct(structType reflect.Type) (err error)
 }
 
 type simpleSQL struct {
@@ -99,6 +102,10 @@ func (s *simpleSQL) InsertDb(ctx context.Context, model IModel) (err error) {
 	if err = inspectContext(ctx); err != nil {
 		return err
 	}
+
+	//if err = s.NoTimeFieldInStruct(reflect.TypeOf(model.GetData())); err != nil {
+	//	return err
+	//}
 
 	cmdStr, values, err := createInsertCommand( /*ctx,*/ model, s.getDb().CreateValuesMark)
 	if err != nil {
@@ -126,6 +133,10 @@ func (s *simpleSQL) InsertConn(ctx context.Context, conn *sql.Conn, model IModel
 		return err
 	}
 
+	//if err = s.NoTimeFieldInStruct(reflect.TypeOf(model.GetData())); err != nil {
+	//	return err
+	//}
+
 	cmdStr, values, err := createInsertCommand( /*ctx,*/ model, s.getDb().CreateValuesMark)
 	if err != nil {
 		return err
@@ -151,6 +162,10 @@ func (s *simpleSQL) InsertTrans(ctx context.Context, tx *sql.Tx, model IModel) (
 	if err = inspectContext(ctx); err != nil {
 		return err
 	}
+
+	//if err = s.NoTimeFieldInStruct(reflect.TypeOf(model.GetData())); err != nil {
+	//	return err
+	//}
 
 	cmdStr, values, err := createInsertCommand( /*ctx,*/ model, s.getDb().CreateValuesMark)
 	if err != nil {
@@ -264,6 +279,10 @@ func (s *simpleSQL) UpdateDb(ctx context.Context, model IModel, criteria string)
 		return 0, err
 	}
 
+	//if err = s.NoTimeFieldInStruct(reflect.TypeOf(model.GetData())); err != nil {
+	//	return 0, err
+	//}
+
 	cmdStr, values, err := createUpdateCommand(model, s.getDb().GetValueMark)
 	if err != nil {
 		return 0, err
@@ -301,6 +320,10 @@ func (s *simpleSQL) UpdateConn(ctx context.Context, conn *sql.Conn, model IModel
 		return 0, err
 	}
 
+	//if err = s.NoTimeFieldInStruct(reflect.TypeOf(model.GetData())); err != nil {
+	//	return 0, err
+	//}
+
 	cmdStr, values, err := createUpdateCommand(model, s.getDb().GetValueMark)
 	if err != nil {
 		return 0, err
@@ -334,6 +357,10 @@ func (s *simpleSQL) UpdateTrans(ctx context.Context, tx *sql.Tx, model IModel, c
 	if err = inspectContext(ctx); err != nil {
 		return 0, err
 	}
+
+	//if err = s.NoTimeFieldInStruct(reflect.TypeOf(model.GetData())); err != nil {
+	//	return 0, err
+	//}
 
 	cmdStr, values, err := createUpdateCommand(model, s.getDb().GetValueMark)
 	if err != nil {
@@ -373,6 +400,10 @@ func (s *simpleSQL) SelectDb(ctx context.Context, model IModel, criteria string,
 	if err != nil {
 		return err
 	}
+
+	//if err = s.NoTimeFieldInStruct(reflect.TypeOf(result).Elem().Elem()); err != nil {
+	//	return err
+	//}
 
 	cmdStr, err := createSelectCommand(model)
 	if err != nil {
@@ -433,6 +464,32 @@ func (s *simpleSQL) SelectDb(ctx context.Context, model IModel, criteria string,
 
 func (s *simpleSQL) getDb() IDatabase {
 	return s.db
+}
+
+/*
+func (s *simpleSQL) NoTimeFieldInStruct(structType reflect.Type) (err error) {
+
+	if structType.Kind() != reflect.Struct {
+		return errors.New("type of parameter must be struct")
+	}
+
+	for i := 0; i < structType.NumField(); i++ {
+		if structType.Field(i).Type == reflect.TypeOf(time.Now()) {
+			return errors.New("databasex does not allow you to put time field")
+		}
+	}
+
+	return nil
+}
+*/
+func (s *simpleSQL) DateFieldToInterface(data interface{}) (newData interface{}, err error) {
+
+	if reflect.TypeOf(data).Kind() != reflect.Struct {
+		err = errors.New("type of parameter must be struct")
+		return
+	}
+
+	return
 }
 
 // NewSimpleSQL is function returning object whose type is ISqlOperation.

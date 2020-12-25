@@ -6,19 +6,6 @@ import (
 	"log"
 	"testing"
 	"time"
-
-	_ "github.com/lib/pq"
-)
-
-const (
-	psqlUsernameTest       = "scott"
-	psqlPasswordTest       = "tiger"
-	psqlHostTest           = "localhost"
-	psqlPortTest           = "5432"
-	psqlDbTest             = "db_belajar_golang"
-	psqlOtherTest          = "?sslmode=disable"
-	psqlMaxConnectionsTest = 0
-	psqlMaxIdleTest        = 0
 )
 
 func Test_Postgresql_CreateTable_01(t *testing.T) {
@@ -763,9 +750,11 @@ func Test_Postgresql_DeleteAllRecords_10(t *testing.T) {
 	// TUserTable is data type containing user data
 	type TUserTable struct {
 		TUser
-		Status     string    `fieldtbl:"status"`
-		CreatedAt  time.Time `fieldtbl:"created_at"`
+		Status    string    `fieldtbl:"status"`
+		CreatedAt time.Time `fieldtbl:"created_at"`
+		//CreatedAt string `fieldtbl:"created_at"`
 		LastUpdate time.Time `fieldtbl:"last_update"`
+		//LastUpdate string `fieldtbl:"last_update"`
 	}
 
 	var userData TUserTable
@@ -790,7 +779,9 @@ func Test_Postgresql_DeleteAllRecords_10(t *testing.T) {
 	role := "umum"
 	status := "pending"
 	createdAt := time.Now()
+	//createdAt := time.Now().Format("2006-01-02 15:04:05")
 	lastUpdate := time.Now()
+	//lastUpdate := time.Now().Format("2006-01-02 15:04:05")
 
 	userData = TUserTable{TUser{username, password, email, role}, status, createdAt, lastUpdate}
 	model.SetNewData(userData)
@@ -834,11 +825,13 @@ func Test_Postgresql_DeleteAllRecords_10(t *testing.T) {
 	status = "active"
 	//createdAt := time.Now()
 	lastUpdate = time.Now()
+	//lastUpdate = time.Now().Format("2006-01-02 15:04:05")
 
 	type TUserUpdate struct {
 		Role       string    `fieldtbl:"role"`
 		Status     string    `fieldtbl:"status"`
 		LastUpdate time.Time `fieldtbl:"last_update"`
+		//LastUpdate string `fieldtbl:"last_update"`
 	}
 
 	updatedUser := TUserUpdate{role, status, lastUpdate}
@@ -872,8 +865,6 @@ func Test_Postgresql_DeleteAllRecords_10(t *testing.T) {
 	}
 
 	/*
-
-
 		model.SetNewData(nil)
 		if _, err = sqlOp.DeleteDb(context.Background(), model, ""); err != nil {
 			t.Fatalf("%s\n", err.Error())
@@ -893,6 +884,7 @@ func Test_Postgresql_DeleteAllRecords_10(t *testing.T) {
 	*/
 }
 
+/*
 func Test_Postgresql_datetime_11(t *testing.T) {
 
 	log.Println(t.Name())
@@ -958,7 +950,7 @@ func Test_Postgresql_datetime_11(t *testing.T) {
 		t.Errorf("data is different")
 	}
 
-}
+}*/
 
 func Test_Postgresql_embed_12(t *testing.T) {
 

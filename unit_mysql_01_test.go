@@ -5,19 +5,6 @@ import (
 	"fmt"
 	"log"
 	"testing"
-	"time"
-
-	_ "github.com/go-sql-driver/mysql"
-)
-
-const (
-	mysqlUsernameTest       = "root"
-	mysqlPasswordTest       = ""
-	mysqlHostTest           = "localhost"
-	mysqlPortTest           = "3306"
-	mysqlDbTest             = "db_belajar_golang"
-	mysqlMaxConnectionsTest = 0
-	mysqlMaxIdleTest        = 0
 )
 
 func Test_MySql_CreateTable_01(t *testing.T) {
@@ -43,7 +30,7 @@ func Test_MySql_CreateTable_01(t *testing.T) {
 		t.Fatalf("%s\n", err.Error())
 	}
 
-	cmdStr = "create table if not exists tb_student(id varchar(5), name varchar(255), age int, grade int, created_at datetime)"
+	cmdStr = "create table if not exists tb_student(id varchar(5), name varchar(255), age int, grade int)"
 	_, err = db.Exec(cmdStr)
 	if err != nil {
 		t.Fatalf("%s\n", err.Error())
@@ -680,83 +667,6 @@ func Test_MySql_embed_10(t *testing.T) {
 	}
 
 	if data[0].ID != student.ID || data[0].Name != student.Name || data[0].Age != student.Age || data[0].Grade != student.Grade {
-		t.Errorf("data is different")
-	}
-
-}
-
-func isTimeDifferent(time1, time2 time.Time) bool {
-	return time1.Year() != time2.Year() && time1.Month() != time2.Month() && time1.Day() != time2.Day() &&
-		time1.Hour() != time2.Hour() && time1.Minute() != time2.Minute() && time1.Second() != time2.Second()
-}
-
-func Test_MySql_datetime_11(t *testing.T) {
-
-	log.Println(t.Name())
-
-	// Student is type
-	type Student struct {
-		ID        string    `fieldtbl:"id"`
-		Name      string    `fieldtbl:"name"`
-		Age       int       `fieldtbl:"age"`
-		Grade     int       `fieldtbl:"grade"`
-		CreatedAt time.Time `fieldtbl:"created_at"`
-	}
-
-	t.Logf("testing : add datetime field to tabel tb_student in db_belajar_golang database using mysql")
-
-	t.Logf("create connection to database server")
-
-	currDb, err := NewMysql(mysqlUsernameTest, mysqlPasswordTest, mysqlHostTest, mysqlPortTest, mysqlDbTest,
-		mysqlMaxConnectionsTest, mysqlMaxIdleTest)
-	if err != nil {
-		t.Fatalf("%s\n", err.Error())
-	}
-
-	db, err := currDb.GetDbConnection()
-	if err != nil {
-		t.Fatalf("%s\n", err.Error())
-	}
-
-	defer db.Close()
-
-	sqlOp := NewSimpleSQL(currDb)
-
-	t.Logf("delete all data first")
-
-	model := NewSimpleModel("tb_student", nil)
-	if _, err = sqlOp.DeleteDb(context.Background(), model, ""); err != nil {
-		t.Fatalf("%s\n", err.Error())
-	}
-
-	t.Logf("insert one record into table")
-
-	student := Student{"C001", "junjun", 6, 1, time.Now()}
-	model.SetNewData(student)
-
-	if err = sqlOp.InsertDb(context.Background(), model); err != nil {
-		t.Fatalf("%s\n", err.Error())
-	}
-
-	t.Logf("read table")
-
-	data := make([]Student, 0)
-	model.SetNewData(Student{})
-	if err = sqlOp.SelectDb(context.Background(), model, fmt.Sprintf("ID='%s'", student.ID), &data); err != nil {
-		t.Fatalf("%s\n", err.Error())
-	}
-
-	if len(data) < 1 {
-		t.Errorf("adding one data fail")
-	}
-
-	//fmt.Println(data[0].CreatedAt.Day())
-	//fmt.Println(student.CreatedAt.Day())
-	//fmt.Println(data[0].CreatedAt)
-	//fmt.Println(student.CreatedAt)
-
-	if data[0].ID != student.ID || data[0].Name != student.Name || data[0].Age != student.Age ||
-		data[0].Grade != student.Grade || isTimeDifferent(data[0].CreatedAt, student.CreatedAt) {
 		t.Errorf("data is different")
 	}
 

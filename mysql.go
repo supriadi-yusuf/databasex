@@ -54,6 +54,8 @@ func (workDb *mysqlDb) createConnection(username, password, host, port, dbname s
 
 func (workDb *mysqlDb) BeforeScan(structData reflect.Value) []reflect.Value {
 
+	//return generateStorage(structData)
+
 	storages := make([]reflect.Value, 0)
 
 	structDataType := structData.Type()
@@ -83,9 +85,12 @@ func (workDb *mysqlDb) BeforeScan(structData reflect.Value) []reflect.Value {
 	}
 
 	return storages
+
 }
 
 func (workDb *mysqlDb) AfterScan(structData reflect.Value, prms []reflect.Value) {
+
+	cTime := time.Time{}
 
 	structDataType := structData.Type()
 	for i := 0; i < structData.NumField(); i++ {
@@ -101,18 +106,26 @@ func (workDb *mysqlDb) AfterScan(structData reflect.Value, prms []reflect.Value)
 			}
 		}
 
-		if field.Type().Name() == "Time" {
+		if field.Type() == reflect.TypeOf(cTime) {
 
 			stime := fmt.Sprintf("%s", prms[i].Elem().Interface())
 			//fmt.Println(stime)
 
-			newTime, _ := time.Parse("2006-01-02 15:04:05", stime)
+			newTime, err := time.Parse("2006-01-02 15:04:05", stime)
+			if err != nil {
+				newTime, err = time.Parse("2006-01-02", stime)
+				if err != nil {
+					newTime, _ = time.Parse("15:04:05", stime)
+				}
+
+			}
 			//fmt.Println(newTime)
 			//fmt.Println(field.CanSet())
 			field.Set(reflect.ValueOf(newTime))
 		}
 
 	}
+
 }
 
 // NewMysql is a function to connect with mysql database.
